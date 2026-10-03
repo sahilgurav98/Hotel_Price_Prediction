@@ -78,27 +78,27 @@ step=100.0
 if st.button("Predict Cheapest Rate", type="primary"):
 
 ```
-# Encode hotel ID using the saved encoder
-encoded_hotel_id = hotel_encoder.transform([hotel_id])[0]
-
-# Keep feature names consistent with model training
-input_data = pd.DataFrame([{
-    "hotel_id": encoded_hotel_id,
-    "day_of_month": check_in.day,
-    "day_of_week": check_in.weekday(),
-    "occupancy": occupancy,
-    "competitor_min": competitor_min,
-    "competitor_avg": competitor_avg,
-    "competitor_median": competitor_median,
-    "competitor_max": competitor_max
-}])
-
-prediction = model.predict(input_data)[0]
-
-st.success(f"Predicted Cheapest Rate: ₹{max(0, prediction):,.2f}")
-
-st.caption(
-    "This is an estimated rate from the trained model, "
-    "not a guaranteed live booking price."
-)
-```
+    # Encode hotel ID using the saved encoder
+    encoded_hotel_id = hotel_encoder.transform([hotel_id])[0]
+    
+    # Keep feature names consistent with model training
+    input_data = pd.DataFrame([{
+        "hotel_id": encoded_hotel_id,
+        "day_of_month": check_in.day,
+        "day_of_week": check_in.weekday(),
+        "occupancy": occupancy,
+        "competitor_min": competitor_min,
+        "competitor_avg": competitor_avg,
+        "competitor_median": competitor_median,
+        "competitor_max": competitor_max
+    }])
+    
+    prediction = model.predict(input_data)[0]
+    
+    st.success(f"Predicted Cheapest Rate: ₹{max(0, prediction):,.2f}")
+    
+    st.caption(
+        "This is an estimated rate from the trained model, "
+        "not a guaranteed live booking price."
+    )
+    ```
