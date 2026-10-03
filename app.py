@@ -3,7 +3,9 @@ import pandas as pd
 import joblib
 from datetime import date
 
-# Load trained model and encoder
+# --------------------------------------------------
+# 1. Load trained model and encoder
+# --------------------------------------------------
 @st.cache_resource
 def load_model():
     model = joblib.load("model.pkl")
@@ -12,7 +14,9 @@ def load_model():
 
 model, hotel_encoder = load_model()
 
-# Page configuration
+# --------------------------------------------------
+# 2. Page configuration
+# --------------------------------------------------
 st.set_page_config(
     page_title="Hotel Price Prediction",
     page_icon="🏨",
@@ -20,34 +24,55 @@ st.set_page_config(
 )
 
 st.title("Hotel Cheapest Rate Predictor")
-st.write("Predict the expected cheapest hotel rate using occupancy and competitor prices.")
+st.write(
+    "Predict the expected cheapest hotel rate using "
+    "lead time, occupancy, and competitor prices."
+)
 
-# Hotel selection
+# --------------------------------------------------
+# 3. Hotel selection
+# --------------------------------------------------
 hotel_ids = list(hotel_encoder.classes_)
 
-hotel_id = st.selectbox("Select Hotel ID", hotel_ids)
+hotel_id = st.selectbox(
+    "Select Hotel ID",
+    hotel_ids
+)
 
-# Check-in date
+# --------------------------------------------------
+# 4. Check-in date
+# --------------------------------------------------
 check_in = st.date_input(
     "Check-in Date",
     value=date.today()
 )
 
-# Calculate lead time
-raw_lead_time = (check_in - date.today()).days
-lead_time = max(1, min(31, raw_lead_time))
+# --------------------------------------------------
+# 5. Lead time (manual input)
+# --------------------------------------------------
+lead_time = st.number_input(
+    "Lead Time (days)",
+    min_value=1,
+    max_value=31,
+    value=7,
+    step=1,
+    help="Number of days between the scraping date and check-in date."
+)
 
-st.write(f"Lead time: {lead_time} day(s)")
-
-# Occupancy
+# --------------------------------------------------
+# 6. Occupancy
+# --------------------------------------------------
 occupancy = st.slider(
     "Occupancy (%)",
     min_value=0,
     max_value=100,
-    value=50
+    value=50,
+    step=1
 )
 
-# Competitor prices
+# --------------------------------------------------
+# 7. Competitor prices
+# --------------------------------------------------
 st.subheader("Competitor Rates (₹)")
 
 competitor_min = st.number_input(
@@ -78,40 +103,71 @@ competitor_max = st.number_input(
     step=100.0
 )
 
-# Prediction
-if st.button("Predict Cheapest Rate"):
+# --------------------------------------------------
+# 8. Predict cheapest rate
+# --------------------------------------------------
+if st.button("Predict Cheapest Rate", type="primary"):
 
+    # Validate competitor prices
     if not (
         competitor_min <= competitor_avg <= competitor_max
         and competitor_min <= competitor_median <= competitor_max
     ):
-        st.error("Please enter valid competitor rates.")
+        st.error(
+            "Invalid competitor rates. Ensure the minimum "
+            "is not greater than the average, median, or maximum, "
+            "and the maximum is not lower than them."
+        )
 
     else:
-        encoded_hotel_id = hotel_encoder.transform([hotel_id])[0]
+        try:
+            # Encode hotel ID
+            encoded_hotel_id = hotel_encoder.transform(
+                [hotel_id]
+            )[0]
 
-        input_data = pd.DataFrame([{
-            "hotel_id": encoded_hotel_id,
-            "lead_time": lead_time,
-            "day_of_week": check_in.weekday(),
-            "occupancy": occupancy,
-            "competitor_min": competitor_min,
-            "competitor_avg": competitor_avg,
-            "competitor_median": competitor_median,
-            "competitor_max": competitor_max
-        }])
+            # Prepare input features
+            input_data = pd.DataFrame([{
+                "hotel_id": encoded_hotel_id,
+                "lead_time": lead_time,
+                "day_of_week": check_in.weekday(),
+                "occupancy": occupancy,
+                "competitor_min": competitor_min,
+                "competitor_avg": competitor_avg,
+                "competitor_median": competitor_median,
+                "competitor_max": competitor_max
+            }])
 
-        # Match the exact feature order used during training
-        if hasattr(model, "feature_names_in_"):
-            input_data = input_data[list(model.feature_names_in_)]
+            # Match the exact feature names and order
+            # used when training the model
+            if hasattr(model, "feature_names_in_"):
+                input_data = input_data[
+                    list(model.feature_names_in_)
+                ]
 
-        prediction = float(model.predict(input_data)[0])
+            # Generate prediction
+            prediction = float(model.predict(input_data)[0])
 
-        st.success(
-            f"Predicted Cheapest Rate: ₹{max(0, prediction):,.2f}"
-        )
+            # Display result
+            st.success(
+                f"Predicted Cheapest Rate: ₹{max(0, prediction):,.2f}"
+            )
 
-        st.caption(
-            "This is an estimated rate from the trained model, "
-            "not a live booking price."
-        )
+            st.metric(
+                "Estimated Cheapest Rate",
+                f"₹{max(0, prediction):,.2f}"
+            )
+
+            st.caption(
+                "This is a model-based estimate, not a guaranteed "
+                "live booking price."
+            )
+
+        except Exception as e:
+            st.error(f"Prediction failed: {e}")
+
+# --------------------------------------------------
+# 9. Footer
+# --------------------------------------------------
+st.divider()
+st.caption("Hotel Price Prediction | Machine Learning Prototype")
