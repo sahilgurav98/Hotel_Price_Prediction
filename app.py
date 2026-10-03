@@ -77,14 +77,15 @@ competitor_max = st.number_input(
 
 if st.button("Predict Cheapest Rate", type="primary"):
 
-
-    # Encode hotel ID using the saved encoder
+    # Encode hotel ID
     encoded_hotel_id = hotel_encoder.transform([hotel_id])[0]
     
-    # Keep feature names consistent with model training
+    # Calculate lead time in days
+    lead_time = (check_in - date.today()).days
+    
     input_data = pd.DataFrame([{
         "hotel_id": encoded_hotel_id,
-        "day_of_month": check_in.day,
+        "lead_time": lead_time,
         "day_of_week": check_in.weekday(),
         "occupancy": occupancy,
         "competitor_min": competitor_min,
@@ -96,9 +97,3 @@ if st.button("Predict Cheapest Rate", type="primary"):
     prediction = model.predict(input_data)[0]
     
     st.success(f"Predicted Cheapest Rate: ₹{max(0, prediction):,.2f}")
-    
-    st.caption(
-        "This is an estimated rate from the trained model, "
-        "not a guaranteed live booking price."
-    )
-
