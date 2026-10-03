@@ -9,9 +9,9 @@ model = joblib.load("model.pkl")
 hotel_encoder = joblib.load("hotel_encoder.pkl")
 
 st.set_page_config(
-page_title="Hotel Price Prediction",
-page_icon="🏨",
-layout="centered"
+    page_title="Hotel Price Prediction",
+    page_icon="🏨",
+    layout="centered"
 )
 
 st.title("🏨 Hotel Cheapest Rate Predictor")
@@ -39,45 +39,45 @@ value=date.today()
 # Occupancy percentage
 
 occupancy = st.slider(
-"Occupancy (%)",
-min_value=0,
-max_value=100,
-value=50
+    "Occupancy (%)",
+    min_value=0,
+    max_value=100,
+    value=50
 )
 
 st.subheader("Competitor Rates (₹)")
 
 competitor_min = st.number_input(
-"Minimum Competitor Rate",
-min_value=0.0,
-value=3000.0,
-step=100.0
+    "Minimum Competitor Rate",
+    min_value=0.0,
+    value=3000.0,
+    step=100.0
 )
 
 competitor_avg = st.number_input(
-"Average Competitor Rate",
-min_value=0.0,
-value=4000.0,
-step=100.0
+    "Average Competitor Rate",
+    min_value=0.0,
+    value=4000.0,
+    step=100.0
 )
 
 competitor_median = st.number_input(
-"Median Competitor Rate",
-min_value=0.0,
-value=4000.0,
-step=100.0
+    "Median Competitor Rate",
+    min_value=0.0,
+    value=4000.0,
+    step=100.0
 )
 
 competitor_max = st.number_input(
-"Maximum Competitor Rate",
-min_value=0.0,
-value=6000.0,
-step=100.0
+    "Maximum Competitor Rate",
+    min_value=0.0,
+    value=6000.0,
+    step=100.0
 )
 
 if st.button("Predict Cheapest Rate", type="primary"):
 
-```
+
     # Encode hotel ID using the saved encoder
     encoded_hotel_id = hotel_encoder.transform([hotel_id])[0]
     
@@ -101,4 +101,4 @@ if st.button("Predict Cheapest Rate", type="primary"):
         "This is an estimated rate from the trained model, "
         "not a guaranteed live booking price."
     )
-    ```
+
